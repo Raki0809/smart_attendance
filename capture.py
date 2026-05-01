@@ -1,17 +1,22 @@
 import cv2
 import os
 
-name = input("Enter student name: ").strip()
+student_name = input("Enter student name: ").strip()
 
 dataset_path = "dataset"
-person_path = os.path.join(dataset_path, name)
+person_path = os.path.join(dataset_path, student_name)
+
+if not os.path.exists(dataset_path):
+    os.makedirs(dataset_path)
 
 if not os.path.exists(person_path):
     os.makedirs(person_path)
 
-face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-)
+face_cascade = cv2.CascadeClassifier("face_model.xml")
+
+if face_cascade.empty():
+    print("Error loading face_model.xml")
+    exit()
 
 cap = cv2.VideoCapture(0)
 
@@ -26,7 +31,9 @@ while True:
         print("Failed to access camera")
         break
 
+    frame = cv2.resize(frame, (640, 480))
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
     for (x, y, w, h) in faces:
@@ -39,8 +46,6 @@ while True:
 
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0,255,0), 2)
 
-    cv2.imshow("Capturing Faces", frame)
-
     if count >= max_images:
         break
 
@@ -50,4 +55,4 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 
-print(f"Done! {count} images saved for {name}.")
+print(f"Done! {count} images saved for {student_name}.")
